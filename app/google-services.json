@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "994451807625",
+    "project_id": "selftodo-e1194",
+    "storage_bucket": "selftodo-e1194.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:994451807625:android:ec1aa3bd72269297f39558",
+        "android_client_info": {
+          "package_name": "com.udacity.project4"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "994451807625-o4rksrpc5pg2ofrgjtur2bbfiqcik03s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.udacity.project4",
+            "certificate_hash": "346537a32eb639d2eea1d88d3333122aee5bfbb2"
+          }
+        },
+        {
+          "client_id": "994451807625-7uissi90p13li8nn7ned82qi1ph68drq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQkkXMLNeYlc5xQ0xtJffli1bIRNzYGHk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "994451807625-7uissi90p13li8nn7ned82qi1ph68drq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
