@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
@@ -37,11 +36,15 @@ class AuthenticationActivity : AppCompatActivity() {
                 LoginViewModel.AuthenticationState.AUTHENTICATED -> {
                     val intent = Intent(this, RemindersActivity::class.java)
                     startActivity(intent)
+
                 }
-                else -> Log.e(
-                    TAG,
-                    "Authentication state that doesn't require any UI change $authenticationState"
-                )
+                else -> {
+
+                    Log.e(
+                        TAG,
+                        "Authentication state that doesn't require any UI change $authenticationState"
+                    )
+                }
             }
         })
 
@@ -52,6 +55,14 @@ class AuthenticationActivity : AppCompatActivity() {
         //https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md#custom-layout
 
     }
+
+    override fun onStart() {
+        super.onStart()
+        if (loginViewModel.authenticationState.value == LoginViewModel.AuthenticationState.AUTHENTICATED) {
+            finish()
+        }
+    }
+
     private fun launchSignInFlow() {
         // Give users the option to sign in / register with their email or Google account. If users
         // choose to register with their email, they will need to create a password as well.

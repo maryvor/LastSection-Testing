@@ -36,7 +36,7 @@ abstract class BaseFragment : Fragment() {
                 is NavigationCommand.Back -> findNavController().popBackStack()
                 is NavigationCommand.BackTo -> findNavController().popBackStack(
                     command.destinationId,
-                    false
+                    true
                 )
             }
         })
