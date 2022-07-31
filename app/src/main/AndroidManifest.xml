@@ -37,7 +37,7 @@
 
         <activity android:name=".authentication.AuthenticationActivity"
             android:noHistory="true"
-            android:excludeFromRecents="true">
+            android:excludeFromRecents="false">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

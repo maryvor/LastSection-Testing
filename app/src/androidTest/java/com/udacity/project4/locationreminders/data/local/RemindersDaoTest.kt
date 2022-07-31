@@ -13,8 +13,7 @@ import org.junit.runner.RunWith;
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi;
 import kotlinx.coroutines.test.runBlockingTest
-import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.CoreMatchers.notNullValue
+import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.After
 import org.junit.Test
@@ -25,6 +24,44 @@ import org.junit.Test
 @SmallTest
 class RemindersDaoTest {
 
-//    TODO: Add testing implementation to the RemindersDao.kt
+    @get: Rule
+    var instantExecutorRule = InstantTaskExecutorRule()
 
+    private lateinit var database: RemindersDatabase
+
+    @Before
+    fun initDb(){
+        database = Room.inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            RemindersDatabase::class.java)
+            .build()
+    }
+
+    @After
+    fun closeDb() = database.close()
+
+    @Test
+    fun insertReminderAndGetById() = runBlockingTest {
+        // GIVEN - Insert a reminder.
+        val reminder= ReminderDTO("first","first","first",0.1,0.0, "first")
+        database.reminderDao().saveReminder(reminder)
+
+        // WHEN - Get the reminder by id from the database.
+        val loaded = database.reminderDao().getReminderById(reminder.id)
+
+        // THEN - The loaded data contains the expected values.
+        assertThat<ReminderDTO>(loaded as ReminderDTO, notNullValue())
+        assertThat(loaded.id, `is`(reminder.id))
+        assertThat(loaded.title, `is`(reminder.title))
+        assertThat(loaded.description, `is`(reminder.description))
+        assertThat(loaded.location, `is`(reminder.location))
+        assertThat(loaded.latitude, `is`(reminder.latitude))
+        assertThat(loaded.longitude, `is`(reminder.longitude))
+    }
+
+    @Test
+    fun retrieveNonexistentReminder_getNullValue() = runBlockingTest{
+        val loaded = database.reminderDao().getReminderById("id")
+        assertThat(loaded, `is`(nullValue()))
+    }
 }

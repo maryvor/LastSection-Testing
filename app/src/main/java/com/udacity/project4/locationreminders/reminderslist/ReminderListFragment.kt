@@ -2,9 +2,11 @@ package com.udacity.project4.locationreminders.reminderslist
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import com.firebase.ui.auth.AuthUI
 import com.udacity.project4.R
 import com.udacity.project4.authentication.AuthenticationActivity
@@ -15,6 +17,7 @@ import com.udacity.project4.databinding.FragmentRemindersBinding
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import com.udacity.project4.utils.setTitle
 import com.udacity.project4.utils.setup
+import kotlinx.android.synthetic.main.fragment_reminders.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class ReminderListFragment : BaseFragment() {
@@ -36,7 +39,14 @@ class ReminderListFragment : BaseFragment() {
         setDisplayHomeAsUpEnabled(false)
         setTitle(getString(R.string.app_name))
 
-        binding.refreshLayout.setOnRefreshListener { _viewModel.loadReminders() }
+        //Change the state of SwipeLoading depending on loading reminders process
+        _viewModel.showSwipeLoading.observe(viewLifecycleOwner, Observer {
+            binding.refreshLayout.isRefreshing = _viewModel.showSwipeLoading.value == true
+        })
+
+        binding.refreshLayout.setOnRefreshListener {
+            _viewModel.loadReminders()
+        }
 
         return binding.root
     }
@@ -45,7 +55,9 @@ class ReminderListFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.lifecycleOwner = this
         setupRecyclerView()
+        Log.i("Nav", "Start ${_viewModel.navigationCommand.value}")
         binding.addReminderFAB.setOnClickListener {
+            Log.i("Nav", "InClickListener ${_viewModel.navigationCommand.value}")
             navigateToAddReminder()
         }
     }
@@ -57,18 +69,18 @@ class ReminderListFragment : BaseFragment() {
     }
 
     private fun navigateToAddReminder() {
+        Log.i("Nav", "before postValue within NavigateTo ${_viewModel.navigationCommand.value}")
         //use the navigationCommand live data to navigate between the fragments
         _viewModel.navigationCommand.postValue(
             NavigationCommand.To(
                 ReminderListFragmentDirections.toSaveReminder()
-            )
-        )
+            ))
+        Log.i("Nav", "after postValue within NavigateTo ${_viewModel.navigationCommand.value}")
     }
 
     private fun setupRecyclerView() {
         val adapter = RemindersListAdapter {
         }
-
 //        setup the recycler view using the extension function
         binding.reminderssRecyclerView.setup(adapter)
     }

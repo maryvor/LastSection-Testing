@@ -3,9 +3,13 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
+import android.util.Log
 import android.view.*
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -34,6 +38,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     private var poiPoint: PointOfInterest? = null
 
+    private var latLng: LatLng? = null
+
     private val REQUEST_LOCATION_PERMISSION = 1
     private lateinit var map: GoogleMap
 
@@ -54,7 +60,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         val mMapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mMapFragment.getMapAsync(this)
 
-        binding.saveButton.setOnClickListener{
+        binding.chooseLocationButton.setOnClickListener{
             onLocationSelected()
         }
         return binding.root
@@ -66,10 +72,18 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             _viewModel.longitude.value = poiPoint!!.latLng.longitude
             _viewModel.reminderSelectedLocationStr.value = poiPoint!!.name
             _viewModel.selectedPOI.value = poiPoint
+            findNavController().navigate(SelectLocationFragmentDirections.actionSelectLocationFragmentToSaveReminderFragment())
+            return
+        }
+        if (latLng != null){
+            _viewModel.latitude.value = latLng!!.latitude
+            _viewModel.longitude.value = latLng!!.longitude
+            _viewModel.reminderSelectedLocationStr.value = "Chosen point"
+            findNavController().navigate(SelectLocationFragmentDirections.actionSelectLocationFragmentToSaveReminderFragment())
+            return
 
         }
-        findNavController().navigate(SelectLocationFragmentDirections.actionSelectLocationFragmentToSaveReminderFragment())
-
+            Toast.makeText(context, "Choose location", Toast.LENGTH_SHORT).show()
     }
 
 
@@ -102,13 +116,14 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
         enableMyLocation()
 
+        setMapStyle(map)
+
         setPoiClick(map)
-//        val location: Location
-//        val position= LatLng(location.latitude, location.longitude)
-//        val zoomLevel = 15f
-//        map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, zoomLevel))
-
-
+        setClick(map)
+        //testPosition
+        val position = LatLng(47.36312971501226, 8.536376953125002)
+        val zoomLevel = 15f
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, zoomLevel))
         map.uiSettings.isMyLocationButtonEnabled = true
 
     }
@@ -158,6 +173,44 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                     .title(poi.name)
             )
             poiMarker.showInfoWindow()
+        }
+    }
+
+//    override fun onStop() {
+//        super.onStop()
+//        poiPoint = null
+//        latLng = null
+//    }
+
+    private fun setClick(map: GoogleMap) {
+        map.setOnMapClickListener { latlng ->
+            latLng = latlng
+            map.clear()
+            val pointMarker = map.addMarker(
+                MarkerOptions()
+                    .position(latlng)
+                    .title("Chosen point")
+            )
+            pointMarker.showInfoWindow()
+        }
+    }
+
+    private fun setMapStyle(map: GoogleMap) {
+        try {
+            // Customize the styling of the base map using a JSON object defined
+            // in a raw resource file.
+            val success = map.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(
+                    context,
+                    R.raw.map_style
+                )
+            )
+
+            if (!success) {
+                Log.e(TAG, "Style parsing failed.")
+            }
+        } catch (e: Resources.NotFoundException) {
+            Log.e(TAG, "Can't find style. Error: ", e)
         }
     }
 

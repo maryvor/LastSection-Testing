@@ -16,16 +16,21 @@ class RemindersListViewModel(
     // list that holds the reminder data to be displayed on the UI
     val remindersList = MutableLiveData<List<ReminderDataItem>>()
 
+    val showError =  MutableLiveData<Boolean>()
+    val showSwipeLoading = MutableLiveData<Boolean>(false)
     /**
      * Get all the reminders from the DataSource and add them to the remindersList to be shown on the UI,
      * or show error if any
      */
     fun loadReminders() {
         showLoading.value = true
+        showError.value = false
+        showSwipeLoading.value = true
         viewModelScope.launch {
             //interacting with the dataSource has to be through a coroutine
             val result = dataSource.getReminders()
             showLoading.postValue(false)
+            showSwipeLoading.postValue(false)
             when (result) {
                 is Result.Success<*> -> {
                     val dataList = ArrayList<ReminderDataItem>()
@@ -42,8 +47,12 @@ class RemindersListViewModel(
                     })
                     remindersList.value = dataList
                 }
-                is Result.Error ->
+                is Result.Error ->{
                     showSnackBar.value = result.message
+                    showError.value = true
+
+                }
+
             }
 
             //check if no data has to be shown
