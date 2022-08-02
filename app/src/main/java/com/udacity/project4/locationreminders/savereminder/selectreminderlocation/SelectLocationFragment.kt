@@ -2,11 +2,12 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
-import android.location.Location
-import android.location.LocationManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.*
 import android.widget.Toast
@@ -14,20 +15,22 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.fragment.findNavController
-import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.*
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PointOfInterest
+import com.google.android.material.snackbar.Snackbar
+import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
-import kotlinx.android.synthetic.main.fragment_save_reminder.*
 import org.koin.android.ext.android.inject
-import java.util.*
 
 
 class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
@@ -44,6 +47,9 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private lateinit var map: GoogleMap
 
     private val TAG = SelectLocationFragment::class.java.simpleName
+
+    private var beforeClickPermissionRat = false
+    private var afterClickPermissionRat = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -117,16 +123,17 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         enableMyLocation()
 
         setMapStyle(map)
-
         setPoiClick(map)
         setClick(map)
+
         //testPosition
         val position = LatLng(47.36312971501226, 8.536376953125002)
         val zoomLevel = 15f
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, zoomLevel))
-        map.uiSettings.isMyLocationButtonEnabled = true
 
+        map.uiSettings.isMyLocationButtonEnabled = true
     }
+
 
     private fun enableMyLocation() {
         if (context?.let {
@@ -137,9 +144,9 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             map.isMyLocationEnabled = true
         }
         else {
-            activity?.let {
-                ActivityCompat.requestPermissions(
-                    it,
+            //beforeClickPermissionRat = shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)
+            context?.let {
+                    requestPermissions(
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                     REQUEST_LOCATION_PERMISSION
                 )
@@ -147,9 +154,23 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
     }
 
-    // Callback for the result from requesting permissions.
-    // This method is invoked for every call on requestPermissions(android.app.Activity, String[],
-    // int).
+//    override fun onRequestPermissionsResult(
+//        requestCode: Int,
+//        permissions: Array<String>,
+//        grantResults: IntArray) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+//        // Check if location permissions are granted and if so enable the
+//        // location data layer.
+//        if (requestCode == REQUEST_LOCATION_PERMISSION)
+//            if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+//                enableMyLocation()
+//            }
+//    }
+
+
+//     Callback for the result from requesting permissions.
+//     This method is invoked for every call on requestPermissions(android.app.Activity, String[],
+//     int).
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
@@ -157,10 +178,35 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         // Check if location permissions are granted and if so enable the
         // location data layer.
-        if (requestCode == REQUEST_LOCATION_PERMISSION)
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
             if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 enableMyLocation()
             }
+            if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_DENIED)) {
+                afterClickPermissionRat =
+                    shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)
+                if (!afterClickPermissionRat) {
+                    Snackbar.make(
+                        requireActivity().findViewById(R.id.nav_host_fragment),
+                        R.string.permission_denied_explanation,
+                        Snackbar.LENGTH_INDEFINITE
+                    )
+                        .setAction(R.string.settings) {
+                            startActivity(Intent().apply {
+                                action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                                data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            })
+                        }.show()
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        "Permission was not granted",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
     }
 
     private fun setPoiClick(map: GoogleMap) {

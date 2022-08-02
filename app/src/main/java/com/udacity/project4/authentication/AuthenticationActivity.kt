@@ -90,12 +90,14 @@ class AuthenticationActivity : AppCompatActivity() {
                     "Successfully signed in user " +
                             "${FirebaseAuth.getInstance().currentUser?.displayName}!"
                 )
-                val intent = Intent(this, RemindersActivity::class.java)
-                startActivity(intent)
+//                val intent = Intent(this, RemindersActivity::class.java)
+//                startActivity(intent)
             } else {
                 // Sign in failed. If response is null the user canceled the sign-in flow using
                 // the back button. Otherwise check response.getError().getErrorCode() and handle
                 // the error.
+                val intent = Intent(this, AuthenticationActivity::class.java)
+               startActivity(intent)
                 Log.i(TAG, "Sign in unsuccessful ${response?.error?.errorCode}")
             }
         }

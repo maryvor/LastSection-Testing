@@ -133,7 +133,6 @@ class SaveReminderFragment : BaseFragment() {
         grantResults: IntArray
     ) {
         Log.d(TAG, "onRequestPermissionResult")
-
         if (
             grantResults.isEmpty() ||
             grantResults[LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_DENIED ||
@@ -142,7 +141,7 @@ class SaveReminderFragment : BaseFragment() {
                     PackageManager.PERMISSION_DENIED))
         {
             Snackbar.make(
-                requireActivity().findViewById(R.id.content),
+                requireActivity().findViewById(R.id.nav_host_fragment),
                 R.string.permission_denied_explanation,
                 Snackbar.LENGTH_INDEFINITE
             )
@@ -194,7 +193,7 @@ class SaveReminderFragment : BaseFragment() {
                 }
             } else {
                 Snackbar.make(
-                    requireActivity().findViewById(R.id.content),
+                    requireActivity().findViewById(R.id.nav_host_fragment),
                     R.string.location_required_error, Snackbar.LENGTH_INDEFINITE
                 ).setAction(android.R.string.ok) {
                     checkDeviceLocationSettingsAndStartGeofence()
@@ -224,11 +223,12 @@ class SaveReminderFragment : BaseFragment() {
             else -> REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
         }
         Log.d(TAG, "Request foreground only location permission")
-        ActivityCompat.requestPermissions(
-            requireActivity(),
-            permissionsArray,
-            resultCode
-        )
+        context?.let {
+            requestPermissions(
+                permissionsArray,
+                resultCode
+            )
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -241,7 +241,7 @@ class SaveReminderFragment : BaseFragment() {
                   item.longitude!!,
                   GEOFENCE_RADIUS_IN_METERS
               )
-              .setExpirationDuration(GEOFENCE_EXPIRATION_IN_MILLISECONDS)
+              .setExpirationDuration(Geofence.NEVER_EXPIRE)
               .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
               .build()
 
